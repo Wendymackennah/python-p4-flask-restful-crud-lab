@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 
 from flask import Flask, jsonify, request, make_response
 from flask_migrate import Migrate
@@ -49,6 +48,31 @@ class PlantByID(Resource):
 
 
 api.add_resource(PlantByID, '/plants/<int:id>')
+
+
+def patch(self, plant_id):
+    data = request.get_json()
+    plant = Plant.query.get(plant_id)
+    if not plant:
+        return make_response(jsonify({"error": "Plant not found"}), 404)
+
+    if 'is_in_stock' in data:
+        plant.is_in_stock = data['is_in_stock']
+        db.session.commit()
+        return jsonify(plant.serialize())
+
+    return make_response(jsonify({"error": "No data provided for updating"}), 400)
+
+def delete(self, plant_id):
+    plant = Plant.query.get(plant_id)
+    if not plant:
+        return make_response(jsonify({"error": "Plant not found"}), 404)
+
+    db.session.delete(plant)
+    db.session.commit()
+    return '', 204
+
+
 
 
 if __name__ == '__main__':
